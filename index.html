@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Offline engineering time-history, FFT, Welch PSD and STFT analysis. All data stays in your browser.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Time Series Spectrum Lab</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1b2d42;background:#eef2f6;font-size:16px;--blue:#12619c;--line:#d7e0e9;--muted:#52657a;--orange:#bc5623}*{box-sizing:border-box}body{margin:0}header{background:#122b45;color:#fff;padding:22px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:24px;letter-spacing:-.5px;margin:0 0 5px}header p{margin:0;color:#c7d8e8;font-size:14px}.local{border:1px solid #69869f;padding:7px 10px;white-space:nowrap;border-radius:4px;font-size:13px}main{display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;padding:22px;max-width:1800px;margin:auto}aside{background:#fff;border:1px solid var(--line);border-radius:6px;padding:18px;align-self:start}h2{font-size:18px;margin:0}h3{font-size:15px;margin:15px 0 8px}label{display:block;font-size:14px;margin:12px 0 5px}input,select,button,textarea{font:inherit;border-radius:4px}input:not([type=checkbox]),select,textarea{width:100%;padding:8px;border:1px solid #abbccc;background:#fff;color:inherit;font-size:14px;min-width:0}input[type=file]{padding:8px 0;border:0;font-size:13px}input[type=checkbox]{accent-color:var(--blue);width:16px;height:16px;vertical-align:middle;margin:0 7px 0 0}.check{display:flex;align-items:center;gap:3px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.help{font-size:13px;color:var(--muted);line-height:1.6;margin:8px 0}.divider{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}button{cursor:pointer;background:#fff;border:1px solid #aabacc;color:#1b3f60;padding:8px 12px;font-size:14px}button:hover{background:#edf5fc}button:disabled{opacity:.5;cursor:default}button.primary{background:var(--blue);border-color:var(--blue);color:white;font-weight:600}button.primary:hover{background:#104c79}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}.actions button:first-child{flex:1}details{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}summary{cursor:pointer;font-size:15px;font-weight:600}.workspace{min-width:0}.status{padding:12px 16px;background:#e4eef7;border:1px solid #adc8df;border-radius:4px;margin-bottom:16px;font-size:14px;white-space:pre-line;line-height:1.6}.status.error{background:#fff0ec;border-color:#d98874;color:#8a2d19}.status.warn{background:#fff7e4;border-color:#d4b66c;color:#6d510e}.panel{background:#fff;border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin-bottom:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.eyebrow{color:#678095;font-size:12px;letter-spacing:1px;font-weight:700;margin-right:9px}.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}.metric{padding:12px;border-bottom:1px solid #e8edf2;min-width:0}.metric dt{color:var(--muted);font-size:12px;margin-bottom:5px}.metric dd{margin:0;font-size:17px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.plot{position:relative;width:100%;height:300px}.plot canvas{display:block;width:100%;height:100%;touch-action:none;outline-offset:2px}.plot .tooltip{position:absolute;background:#122b45;color:#fff;padding:7px 9px;border-radius:4px;pointer-events:none;white-space:pre;font-size:12px;z-index:2;display:none;max-width:96%;overflow:hidden}.chart-note{font-size:12px;color:var(--muted);margin:6px 0}.legend{display:flex;gap:18px;font-size:13px;flex-wrap:wrap}.legend span:before{content:'';display:inline-block;width:18px;height:3px;background:var(--blue);vertical-align:middle;margin-right:6px}.legend span.second:before{background:var(--orange)}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:9px 12px;border-bottom:1px solid #e4ebf1;white-space:nowrap}th{font-size:12px;color:var(--muted);background:#f4f7fa;font-weight:600}th:first-child,td:first-child{text-align:left}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar button{padding:5px 9px;font-size:12px}.toolbar label{margin:0}.toolbar select{width:auto}footer{color:var(--muted);font-size:12px;line-height:1.7;padding:0 24px 24px;text-align:center}.empty{color:var(--muted);font-size:14px}#preview{max-height:130px;overflow:auto;font-size:12px;background:#f4f7fa;padding:8px;white-space:pre;display:none}textarea{min-height:100px}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #50a1dc;outline-offset:2px}@media(max-width:1050px){main{grid-template-columns:270px minmax(0,1fr);padding:12px;gap:12px}.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:14px}.panel-head{flex-wrap:wrap}}@media(max-width:720px){header{padding:18px;align-items:start}.local{display:none}main{grid-template-columns:1fr}h1{font-size:22px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.plot{height:270px}aside{padding:16px}.panel-head h2{font-size:16px}}
+</style>
+</head>
+<body>
+<header><div><h1>Time Series Spectrum Lab</h1><p>工学時刻歴の FFT・Welch PSD・時間–周波数解析</p></div><div class="local">OFFLINE · LOCAL PROCESSING</div></header>
+<main><aside aria-label="解析設定">
+<h2>入力と解析設定</h2>
+<label for="file">CSV / 区切りテキスト</label><input id="file" type="file" accept=".csv,.tsv,.txt,.dat,text/*">
+<p class="help" id="file-name">ファイルを選択、または検証サンプルを読み込みます。</p>
+<label for="sample">検証サンプル</label><div class="row"><select id="sample"><option value="tones">3成分正弦波</option><option value="dc">DC offset</option><option value="trend">線形トレンド</option><option value="irregular">非等間隔</option><option value="leakage">Spectral leakage</option><option value="chirp">Chirp</option></select><button id="load-sample">読み込む</button></div>
+<details><summary>テキストを貼り付け</summary><label for="paste">CSV / TSV / 空白区切り</label><textarea id="paste" spellcheck="false" placeholder="time,value&#10;0,0&#10;0.001,0.152"></textarea><button id="load-paste">テキストを読み込む</button></details>
+<div class="row"><div><label for="delimiter">区切り文字</label><select id="delimiter"><option value="auto">自動判定</option><option value="comma">カンマ</option><option value="tab">タブ</option><option value="space">空白</option></select></div><div><label for="header">ヘッダー</label><select id="header"><option value="auto">自動判定</option><option value="yes">あり</option><option value="no">なし</option></select></div></div>
+<div class="row"><div><label for="time-col">時間列</label><select id="time-col"></select></div><div><label for="value-col">値列</label><select id="value-col"></select></div></div><pre id="preview"></pre>
+<div class="row"><div><label for="time-unit">入力時間単位</label><select id="time-unit"><option value="1">s</option><option value="0.001">ms</option><option value="0.000001">µs</option><option value="60">min</option></select></div><div><label for="unit">値の単位</label><input id="unit" placeholder="例: m/s²" value="a.u."></div></div>
+<label for="quantity">物理量ラベル</label><input id="quantity" value="Signal" placeholder="例: Acceleration">
+<details open><summary>サンプリング・前処理</summary>
+<label for="tolerance">Δt 不均一度の許容値</label><input id="tolerance" type="number" min="0" step="0.0001" value="0.0001"><p class="help">(最大Δt − 最小Δt) / 平均Δt</p>
+<label class="check"><input id="resample" type="checkbox">非等間隔なら線形再サンプリング</label>
+<label class="check"><input id="remove-mean" type="checkbox" checked>平均値を除去</label>
+<label class="check"><input id="detrend" type="checkbox">線形トレンドを除去</label>
+<label for="window">FFT / Welch 窓関数</label><select id="window"><option value="rectangular">None / Rectangular</option><option value="hann" selected>Hann</option><option value="hamming">Hamming</option><option value="blackman">Blackman</option></select>
+<label for="padding">FFT zero padding</label><select id="padding"><option value="none">なし（任意長 FFT）</option><option value="next">次の2のべき乗</option><option value="double">次の2のべき乗 × 2</option></select><p class="help">Zero padding は真の周波数分解能を改善しません。</p></details>
+<details open><summary>スペクトル・ピーク</summary>
+<label for="mode">表示するスペクトル</label><select id="mode"><option value="amplitude">FFT amplitude</option><option value="psd">Welch PSD</option></select>
+<div class="row"><div><label for="fmin">下限 [Hz]</label><input id="fmin" type="number" value="0" min="0" step="any"></div><div><label for="fmax">上限 [Hz]</label><input id="fmax" type="number" value="50" min="0" step="any"></div></div>
+<label class="check"><input id="log-f" type="checkbox">周波数軸を Log 表示</label>
+<div class="row"><div><label for="segment">Welch 長さ</label><input id="segment" type="number" min="8" step="1" value="1024"></div><div><label for="overlap">Overlap [%]</label><input id="overlap" type="number" min="0" max="95" value="50"></div></div>
+<div class="row"><div><label for="peak-threshold">ピーク閾値 [%]</label><input id="peak-threshold" type="number" min="0" max="100" value="2" step="0.1"></div><div><label for="peak-distance">最小間隔 [Hz]</label><input id="peak-distance" type="number" min="0" value="0.5" step="0.1"></div></div><p class="help">FFT 振幅の局所ピークを検出。DC を除外し、全帯域の上位8件を表示します。</p></details>
+<details><summary>STFT / Spectrogram</summary><label class="check"><input id="stft-enable" type="checkbox" checked>スペクトログラムを計算</label><div class="row"><div><label for="stft-length">窓長 [points]</label><input id="stft-length" type="number" min="8" value="512"></div><div><label for="stft-overlap">Overlap [%]</label><input id="stft-overlap" type="number" min="0" max="95" value="75"></div></div><label for="stft-window">STFT 窓関数</label><select id="stft-window"><option value="hann">Hann</option><option value="hamming">Hamming</option><option value="blackman">Blackman</option><option value="rectangular">Rectangular</option></select></details>
+<details><summary>フィルタ・数値積分</summary><label for="filter">フィルタ</label><select id="filter"><option value="none">なし</option><option value="lowpass">Low-pass</option><option value="highpass">High-pass</option><option value="bandpass">Band-pass</option></select><div class="row"><div><label for="low-cut">HP / Band 下限 [Hz]</label><input id="low-cut" type="number" min="0" value="1" step="any"></div><div><label for="high-cut">LP / Band 上限 [Hz]</label><input id="high-cut" type="number" min="0" value="20" step="any"></div></div><label for="integrate">台形則による積分</label><select id="integrate"><option value="0">なし</option><option value="1">1回（初期値 0）</option><option value="2">2回（初期値 0）</option></select><p class="help">積分はドリフトに敏感です。基線補正の代わりにはなりません。フィルタの端部・遷移帯域にも注意してください。</p></details>
+<div class="actions"><button class="primary" id="analyze" disabled>解析を実行</button><button id="cancel" disabled>中止</button></div><p class="help" id="settings-state">入力データ待ち</p>
+<p class="help divider">All data processing is performed locally in your browser. データの外部送信はありません。</p>
+</aside>
+<div class="workspace">
+<div id="status" class="status" role="status" aria-live="polite">ファイルを読み込むか、左の検証サンプルで解析を始めてください。</div>
+<section class="panel"><div class="panel-head"><h2><span class="eyebrow">01</span>Data Summary</h2><span class="help">入力時刻歴の統計量</span></div><dl id="summary" class="summary-grid"><div class="metric"><dt>データ点数 N</dt><dd>—</dd></div></dl><p class="help" id="analysis-info">時間は秒に換算して解析します。</p></section>
+<section class="panel"><div class="panel-head"><h2><span class="eyebrow">02</span>Time History</h2><div class="toolbar"><button data-reset="history">表示をリセット</button><button data-png="history" disabled>PNG</button><button id="export-history" disabled>処理後 CSV</button></div></div><div id="history" class="plot"></div><div id="history-legend" class="legend"><span>入力</span><span class="second">前処理・フィルタ・積分後</span></div><p class="chart-note">ホイール: 拡大・縮小 / ドラッグ: パン / マウス: 値確認 / ダブルクリック: リセット。キーボード: ± / 矢印 / Home</p></section>
+<section class="panel"><div class="panel-head"><h2><span class="eyebrow">03</span>Frequency Spectrum</h2><div class="toolbar"><button data-reset="spectrum">表示をリセット</button><button data-png="spectrum" disabled>PNG</button><button id="export-spectrum" disabled>スペクトル CSV</button></div></div><div id="spectrum" class="plot"></div><p class="help" id="spectrum-info">FFT amplitude / Welch PSD を切り替えて表示できます。</p><div id="spectrum-legend" class="legend"></div></section>
+<section class="panel"><div class="panel-head"><h2><span class="eyebrow">04</span>Dominant Frequencies</h2><button id="export-peaks" disabled>ピーク CSV</button></div><div class="table-wrap"><table><thead><tr><th>順位</th><th>周波数 [Hz]</th><th>周期 [s]</th><th id="amp-heading">Amplitude</th><th id="psd-heading">Welch PSD *</th></tr></thead><tbody id="peaks"><tr><td colspan="5">解析後に表示されます。</td></tr></tbody></table></div><p class="chart-note">* PSD はWelch bin 間で線形補間した値です。振幅と PSD は異なる周波数刻みを持ちます。ピーク周波数は FFT bin の位置です。</p></section>
+<section class="panel"><div class="panel-head"><h2><span class="eyebrow">05</span>Spectrogram</h2><div class="toolbar"><button data-reset="spectrogram">表示をリセット</button><button data-png="spectrogram" disabled>PNG</button></div></div><div id="spectrogram" class="plot"></div><p class="help" id="stft-info">STFT による PSD。色は 10 log₁₀(PSD / 1 unit²/Hz)。</p></section>
+</div></main><footer>This tool is intended for engineering analysis and educational use.<br>有限長データ・窓関数・前処理の影響を確認し、解析目的に応じて妥当性を判断してください。</footer>
+<script id="numerical-engine">
+/* Dependency-free numerical engine. Keep all helpers inside this factory so it
+   can be serialized into a Blob Web Worker without any remote script. */
+function createEngine() {
+  'use strict';
+  const TAU = 2 * Math.PI;
+  function nextPower(n) { let p = 1; while (p < n) p *= 2; return p; }
+  function radix(real, imag, inverse = false) {
+    const n = real.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1;
+      for (; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) { [real[i], real[j]] = [real[j], real[i]]; [imag[i], imag[j]] = [imag[j], imag[i]]; }
+    }
+    for (let size = 2; size <= n; size *= 2) {
+      const angle = (inverse ? TAU : -TAU) / size, wr = Math.cos(angle), wi = Math.sin(angle);
+      for (let base = 0; base < n; base += size) {
+        let ur = 1, ui = 0;
+        for (let j = 0; j < size / 2; j++) {
+          const a = base + j, b = a + size / 2;
+          const tr = ur * real[b] - ui * imag[b], ti = ur * imag[b] + ui * real[b];
+          real[b] = real[a] - tr; imag[b] = imag[a] - ti; real[a] += tr; imag[a] += ti;
+          const tmp = ur * wr - ui * wi; ui = ur * wi + ui * wr; ur = tmp;
+        }
+      }
+    }
+    if (inverse) for (let i = 0; i < n; i++) { real[i] /= n; imag[i] /= n; }
+  }
+  function fft(x) {
+    const n = x.length;
+    if (!n) throw Error('FFT input must not be empty.');
+    if (n > 1048576) throw Error('Maximum FFT length is 1,048,576 samples.');
+    if (nextPower(n) === n) { const real = Float64Array.from(x), imag = new Float64Array(n); radix(real, imag); return {real, imag}; }
+    // Bluestein chirp-z transform: arbitrary-length DFT as a power-of-two convolution.
+    const m = nextPower(2 * n - 1), ar = new Float64Array(m), ai = new Float64Array(m), br = new Float64Array(m), bi = new Float64Array(m);
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * ((i * i) % (2 * n)) / n, c = Math.cos(a), s = Math.sin(a);
+      ar[i] = x[i] * c; ai[i] = -x[i] * s; br[i] = c; bi[i] = s;
+      if (i) { br[m - i] = c; bi[m - i] = s; }
+    }
+    radix(ar, ai); radix(br, bi);
+    for (let i = 0; i < m; i++) { const r = ar[i] * br[i] - ai[i] * bi[i]; ai[i] = ar[i] * bi[i] + ai[i] * br[i]; ar[i] = r; }
+    radix(ar, ai, true);
+    const real = new Float64Array(n), imag = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * ((i * i) % (2 * n)) / n, c = Math.cos(a), s = Math.sin(a);
+      real[i] = ar[i] * c + ai[i] * s; imag[i] = ai[i] * c - ar[i] * s;
+    }
+    return {real, imag};
+  }
+  function parse(text, delimiter = 'auto', header = 'auto') {
+    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+    if (!lines.length) throw Error('The file contains no data.');
+    if (delimiter === 'auto') delimiter = lines[0].includes(',') ? ',' : lines[0].includes('\t') ? '\t' : 'space';
+    delimiter = ({comma:',',tab:'\t',whitespace:'space'})[delimiter] || delimiter;
+    function split(line) {
+      if (delimiter === 'space' || delimiter === ' ') return line.split(/\s+/);
+      const out = []; let field = '', quoted = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { if (quoted && line[i + 1] === '"') { field += '"'; i++; } else quoted = !quoted; }
+        else if (c === delimiter && !quoted) { out.push(field.trim()); field = ''; } else field += c;
+      }
+      if (quoted) throw Error('Unclosed CSV quote; multiline quoted fields are not supported.');
+      out.push(field.trim()); return out;
+    }
+    const rows = lines.map(split), width = rows[0].length;
+    if (width < 2) throw Error('At least two columns are required.');
+    rows.forEach((row, i) => { if (row.length !== width) throw Error(`Row ${i + 1} has ${row.length} columns; expected ${width}.`); });
+    const isHeader = header === true || header === 'yes' || header === 'present' || (header === 'auto' && rows[0].some(v => v === '' || !Number.isFinite(Number(v))));
+    const headers = isHeader ? rows.shift().map((s, i) => s || `Column ${i + 1}`) : Array.from({length:width}, (_, i) => `Column ${i + 1}`);
+    return {headers, rows, delimiter};
+  }
+  function inspect(t) {
+    const n = t.length;
+    if (n < 8) throw Error('At least 8 samples are required.');
+    if (n > 524288) throw Error('Maximum record length is 524,288 samples.');
+    let minDt = Infinity, maxDt = -Infinity;
+    for (let i = 0; i < n; i++) {
+      if (!Number.isFinite(t[i])) throw Error(`Time at sample ${i + 1} is not finite.`);
+      if (i) { const d = t[i] - t[i - 1]; if (!(d > 0)) throw Error(`Time must be strictly increasing (sample ${i + 1}).`); minDt = Math.min(minDt, d); maxDt = Math.max(maxDt, d); }
+    }
+    const duration = t[n - 1] - t[0], dt = duration / (n - 1), fs = 1 / dt;
+    if (!Number.isFinite(fs) || !(fs > 0)) throw Error('Invalid sampling interval.');
+    return {n, start:t[0], end:t[n - 1], duration, dt, minDt, maxDt, fs, nyquist:fs / 2, resolution:fs / n, jitter:(maxDt - minDt) / dt};
+  }
+  function stats(x) {
+    let mean = 0, m2 = 0, max = -Infinity, min = Infinity, sq = 0;
+    for (let i = 0; i < x.length; i++) {
+      const v = x[i]; if (!Number.isFinite(v)) throw Error(`Value at sample ${i + 1} is not finite.`);
+      const d = v - mean; mean += d / (i + 1); m2 += d * (v - mean); sq += v * v; max = Math.max(max, v); min = Math.min(min, v);
+    }
+    if (![mean,m2,sq].every(Number.isFinite)) throw Error('Input magnitudes exceed safe floating-point statistics range.');
+    return {max, min, mean, std:Math.sqrt(Math.max(0,m2 / x.length)), rms:Math.sqrt(sq / x.length)};
+  }
+  function preprocess(x, options = {}) {
+    const y = Float64Array.from(x), n = y.length;
+    if (options.removeMean || options.detrend) {
+      const mean = stats(y).mean;
+      for (let i = 0; i < n; i++) y[i] -= mean;
+    }
+    if (options.detrend) {
+      const center = (n - 1) / 2; let numerator = 0, denominator = 0;
+      for (let i = 0; i < n; i++) { const q = i - center; numerator += q * y[i]; denominator += q * q; }
+      const slope = numerator / denominator;
+      for (let i = 0; i < n; i++) y[i] -= slope * (i - center);
+    }
+    return y;
+  }
+  function windowValues(n, type = 'hann') {
+    if (!['none','rectangular','hann','hamming','blackman'].includes(type)) throw Error('Unknown window.');
+    // Periodic windows (denominator N), suitable for DFT analysis.
+    const w = new Float64Array(n);
+    for (let i = 0; i < n; i++) { const a = TAU * i / n; w[i] = type === 'hann' ? .5 - .5 * Math.cos(a) : type === 'hamming' ? .54 - .46 * Math.cos(a) : type === 'blackman' ? .42 - .5 * Math.cos(a) + .08 * Math.cos(2 * a) : 1; }
+    return w;
+  }
+  function spectrum(x, fs, window = 'hann', padding = 'none') {
+    if (!Number.isFinite(fs) || !(fs > 0)) throw Error('Sampling frequency must be finite and positive.');
+    const n = x.length, nfft = padding === 'next' ? nextPower(n) : padding === 'double' ? 2 * nextPower(n) : n;
+    const w = windowValues(n, window), input = new Float64Array(nfft); let sum = 0;
+    for (let i = 0; i < n; i++) { sum += w[i]; input[i] = x[i] * w[i]; }
+    const f = fft(input), count = Math.floor(nfft / 2) + 1, frequency = new Float64Array(count), values = new Float64Array(count);
+    for (let k = 0; k < count; k++) { frequency[k] = k * fs / nfft; const factor = (k === 0 || (nfft % 2 === 0 && k === nfft / 2)) ? 1 : 2; values[k] = factor * (Math.hypot(f.real[k], f.imag[k]) / sum); if (!Number.isFinite(values[k]) || !Number.isFinite(frequency[k])) throw Error('Spectrum exceeds the floating-point range. Rescale input values or time units.'); }
+    return {frequency, values, nfft, binWidth:fs / nfft, resolution:fs / n, coherentGain:sum / n};
+  }
+  function segmentSettings(n, length, overlap) {
+    if (!Number.isInteger(length) || length < 8) throw Error('Segment/window length must be an integer of at least 8.');
+    if (!Number.isFinite(overlap) || overlap < 0 || overlap >= 1) throw Error('Overlap must be in [0, 1).');
+    length = Math.min(n, length); const step = Math.max(1, Math.round(length * (1 - overlap)));
+    return {length, step, segments:Math.floor((n - length) / step) + 1};
+  }
+  function periodogram(x, fs, w) {
+    if (!Number.isFinite(fs) || !(fs > 0)) throw Error('Sampling frequency must be finite and positive.');
+    let energy = 0; const input = new Float64Array(x.length);
+    for (let i = 0; i < x.length; i++) { input[i] = x[i] * w[i]; energy += w[i] * w[i]; }
+    const f = fft(input), values = new Float64Array(Math.floor(x.length / 2) + 1);
+    // Normalize before squaring: a finite PSD can have an overflowing raw |FFT|².
+    const scale = Math.sqrt(fs) * Math.sqrt(energy);
+    for (let k = 0; k < values.length; k++) {
+      const factor = k === 0 || (x.length % 2 === 0 && k === x.length / 2) ? 1 : 2;
+      const real = f.real[k] / scale, imag = f.imag[k] / scale;
+      values[k] = factor * (real * real + imag * imag);
+      if (!Number.isFinite(values[k])) throw Error('PSD exceeds the floating-point range. Rescale input values or time units.');
+    }
+    return values;
+  }
+  function welch(x, fs, segmentLength = 1024, overlap = .5, window = 'hann') {
+    const s = segmentSettings(x.length, segmentLength, overlap), w = windowValues(s.length, window), values = new Float64Array(Math.floor(s.length / 2) + 1);
+    if (s.segments * s.length > 16000000) throw Error('Welch workload too large; reduce overlap or record length.');
+    for (let j = 0; j < s.segments; j++) { const p = periodogram(x.subarray ? x.subarray(j * s.step, j * s.step + s.length) : x.slice(j * s.step, j * s.step + s.length), fs, w); for (let k = 0; k < values.length; k++) values[k] += p[k] / s.segments; }
+    return {frequency:Float64Array.from(values, (_, k) => k * fs / s.length), values, segmentLength:s.length, segments:s.segments, binWidth:fs / s.length, step:s.step};
+  }
+  function interpolate(axis, values, f) {
+    const z = f / (axis[1] - axis[0]), i = Math.floor(z);
+    if (i >= values.length - 1) return values[values.length - 1];
+    return values[i] + (values[i + 1] - values[i]) * (z - i);
+  }
+  function peaks(amplitude, psd, options = {}) {
+    const v = amplitude.values, f = amplitude.frequency; let max = 0;
+    for (let i = 1; i < v.length; i++) max = Math.max(max, v[i]);
+    const candidates = [], threshold = options.peakThreshold === undefined ? .02 : options.peakThreshold;
+    for (let i = 1; i < v.length; i++) {
+      if (v[i] >= threshold * max && v[i] > v[i - 1] && (i === v.length - 1 || v[i] >= v[i + 1])) candidates.push(i);
+    }
+    candidates.sort((a,b) => v[b] - v[a]); const chosen = [], distance = Math.max(0, options.peakDistance || 0);
+    for (const i of candidates) {
+      if (chosen.every(p => Math.abs(p.frequency - f[i]) >= distance)) chosen.push({frequency:f[i],period:1 / f[i],amplitude:v[i],psd:interpolate(psd.frequency,psd.values,f[i])});
+      if (chosen.length >= (options.peakCount || 8)) break;
+    }
+    return chosen;
+  }
+  function resample(t, x, info) {
+    const times = new Float64Array(t.length), values = new Float64Array(x.length); let j = 0;
+    for (let i = 0; i < t.length; i++) {
+      const a = i === t.length - 1 ? t[t.length - 1] : t[0] + i * info.dt;
+      while (j < t.length - 2 && t[j + 1] < a) j++;
+      times[i] = a; values[i] = x[j] + (x[j + 1] - x[j]) * ((a - t[j]) / (t[j + 1] - t[j]));
+    }
+    return {t:times,x:values};
+  }
+  function filterSignal(x, fs, options) {
+    const type = options.filter; if (!type || type === 'none') return Float64Array.from(x);
+    const low = Number(options.lowCut), high = Number(options.highCut), nyquist = fs / 2;
+    if (!['lowpass','highpass','bandpass'].includes(type)) throw Error('Unknown filter.');
+    if ((type !== 'highpass' && !(high > 0 && high < nyquist)) || (type !== 'lowpass' && !(low > 0 && low < nyquist)) || (type === 'bandpass' && low >= high)) throw Error('Filter cutoffs must satisfy 0 < cutoff < Nyquist, with lower < upper.');
+    const half = Math.min(128, Math.floor((x.length - 1) / 2)), count = 2 * half + 1;
+    function lowKernel(cut) {
+      const h = new Float64Array(count); let sum = 0;
+      for (let j = -half; j <= half; j++) { const ideal = j === 0 ? 2 * cut / fs : Math.sin(TAU * cut / fs * j) / (Math.PI * j); const win = .54 + .46 * Math.cos(Math.PI * j / half); h[j + half] = ideal * win; sum += h[j + half]; }
+      for (let j = 0; j < count; j++) h[j] /= sum;
+      return h;
+    }
+    const h = type === 'highpass' ? lowKernel(low) : lowKernel(high);
+    if (type === 'highpass') { for (let j = 0; j < count; j++) h[j] = -h[j]; h[half] += 1; }
+    if (type === 'bandpass') { const hlow = lowKernel(low); for (let j = 0; j < count; j++) h[j] -= hlow[j]; }
+    const out = new Float64Array(x.length), end = x.length - 1;
+    for (let i = 0; i < x.length; i++) { let sum = 0; for (let j = -half; j <= half; j++) { let k = i + j; if (k < 0) k = -k; if (k > end) k = 2 * end - k; sum += h[j + half] * x[k]; } out[i] = sum; }
+    return out;
+  }
+  function analyze({t, x, options = {}}) {
+    const o = Object.assign({tolerance:1e-4,resample:false,removeMean:true,detrend:false,window:'hann',padding:'none',segmentLength:1024,overlap:.5,stft:true,stftLength:256,stftOverlap:.75,stftWindow:'hann',peakCount:8,peakThreshold:.02,peakDistance:0,filter:'none',integrate:0},options);
+    t = Float64Array.from(t); x = Float64Array.from(x);
+    if (t.length !== x.length) throw Error('Time and value arrays must have equal length.');
+    const summary = Object.assign(inspect(t), stats(x)), warnings = [];
+    if (!Number.isFinite(o.tolerance) || o.tolerance < 0) throw Error('Time-step tolerance must be nonnegative.');
+    if (!Number.isFinite(o.peakThreshold) || o.peakThreshold < 0 || o.peakThreshold > 1 || !Number.isFinite(o.peakDistance) || o.peakDistance < 0 || !Number.isInteger(o.peakCount) || o.peakCount < 1) throw Error('Invalid peak settings.');
+    if (!['none','next','double'].includes(o.padding)) throw Error('Unknown zero-padding setting.');
+    if (summary.jitter > o.tolerance) {
+      if (!o.resample) throw Error(`Non-uniform sampling: relative Δt spread ${summary.jitter.toExponential(3)} exceeds tolerance ${o.tolerance}. Enable linear resampling before FFT.`);
+      const r = resample(t,x,summary); t = r.t; x = r.x;
+      warnings.push('Linear interpolation onto an equal-spacing grid was applied. High-frequency content may be attenuated; gaps are not reconstructed and no anti-alias filter is applied.');
+    }
+    const processedSummary = Object.assign(inspect(t), stats(x)), fs = processedSummary.fs;
+    let processed = preprocess(x,o);
+    const beforeProcessing = Float64Array.from(processed);
+    processed = filterSignal(processed,fs,o);
+    if (o.filter !== 'none') warnings.push('Centered Hamming-windowed FIR filter, at most 257 taps, with reflected boundaries. Interior phase is zero; edge transients and finite transition bands remain. Cutoffs are approximate.');
+    if (![0,1,2].includes(o.integrate)) throw Error('Integration count must be 0, 1, or 2.');
+    for (let p = 0; p < o.integrate; p++) {
+      const y = new Float64Array(processed.length);
+      for (let i = 1; i < y.length; i++) y[i] = y[i - 1] + .5 * (processed[i] + processed[i - 1]) * (t[i] - t[i - 1]);
+      processed = y;
+    }
+    if (o.integrate) warnings.push('Trapezoidal integration assumes zero initial values. DC offsets, baseline drift and low-frequency noise can produce large errors; this is not validated seismic baseline correction.');
+    // Filtering/integration can amplify a finite input beyond safe output range.
+    stats(processed);
+    const amplitude = spectrum(processed,fs,o.window,o.padding), psd = welch(processed,fs,o.segmentLength,o.overlap,o.window);
+    let stft = null;
+    if (o.stft) {
+      const s = segmentSettings(processed.length,o.stftLength,o.stftOverlap), bins = Math.floor(s.length / 2) + 1;
+      if (s.segments * bins > 1500000 || s.segments * s.length > 3000000) warnings.push('STFT skipped: resource cap exceeded. Increase hop size, reduce record length, or reduce window length.');
+      else {
+        const times = new Float64Array(s.segments), frequency = Float64Array.from({length:bins},(_,k) => k * fs / s.length), values = [], w = windowValues(s.length,o.stftWindow);
+        for (let j = 0; j < s.segments; j++) { const start = j * s.step; times[j] = .5 * (t[start] + t[start + s.length - 1]); values.push(periodogram(processed.subarray(start,start + s.length),fs,w)); }
+        stft = {times,frequency,values,segmentLength:s.length,step:s.step,scale:'PSD'};
+      }
+    }
+    // PSD peak values are linearly interpolated from Welch bins, not amplitudes squared.
+    return {summary,processedSummary,t,x,processed,amplitude,psd,peaks:peaks(amplitude,psd,o),stft,warnings,
+      beforeProcessing, originalAmplitude:(o.filter !== 'none' || o.integrate) ? spectrum(beforeProcessing,fs,o.window,o.padding) : null,
+      originalPsd:(o.filter !== 'none' || o.integrate) ? welch(beforeProcessing,fs,o.segmentLength,o.overlap,o.window) : null};
+  }
+  return {parse,inspect,stats,fft,preprocess,windowValues,spectrum,welch,peaks,analyze,filterSignal};
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = createEngine;
+
+</script>
+<script id="application">
+'use strict';
+// UI state, worker orchestration, canvas rendering and export are deliberately
+// separate from createEngine(), the independently testable numerical module.
+const $ = id => document.getElementById(id);
+const engine = createEngine();
+const state = {text:'',table:null,result:null,raw:null,worker:null,job:0,filename:'',dirty:false,options:null,meta:null,readJob:0};
+const fmt = value => !Number.isFinite(value) ? '—' : value === 0 ? '0' : (Math.abs(value) < .001 || Math.abs(value) >= 1e6) ? value.toExponential(5) : Number(value.toPrecision(7)).toString();
+function notice(message,kind='') {$('status').textContent=message;$('status').className='status'+(kind?' '+kind:'');}
+function finiteField(id,min=-Infinity,max=Infinity,integer=false){const text=$(id).value.trim(),value=Number(text);if(!text||!Number.isFinite(value)||value<min||value>max||(integer&&!Number.isInteger(value)))throw Error(`${$(id).labels?.[0]?.textContent||id}: ${min} ～ ${max} の${integer?'整数':'数値'}を入力してください。`);return value;}
+function options(){return {tolerance:finiteField('tolerance',0),resample:$('resample').checked,removeMean:$('remove-mean').checked,detrend:$('detrend').checked,window:$('window').value,padding:$('padding').value,segmentLength:finiteField('segment',8,524288,true),overlap:finiteField('overlap',0,95)/100,stft:$('stft-enable').checked,stftLength:finiteField('stft-length',8,524288,true),stftOverlap:finiteField('stft-overlap',0,95)/100,stftWindow:$('stft-window').value,peakCount:8,peakThreshold:finiteField('peak-threshold',0,100)/100,peakDistance:finiteField('peak-distance',0),filter:$('filter').value,lowCut:finiteField('low-cut',0),highCut:finiteField('high-cut',0),integrate:Number($('integrate').value)};}
+function terminate(){if(state.worker){state.worker.terminate();state.worker=null;}state.job++;$('cancel').disabled=true;$('analyze').disabled=!state.table;}
+function task(kind,payload,done){terminate();const id=state.job;try{const source=`${createEngine.toString()}\nconst e=createEngine();onmessage=({data})=>{try{postMessage({ok:true,result:data.kind==='parse'?e.parse(data.payload.text,data.payload.delimiter,data.payload.header):e.analyze(data.payload)});}catch(error){postMessage({ok:false,error:error.message});}};`;
+const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));try{state.worker=new Worker(url);}finally{URL.revokeObjectURL(url);}
+$('cancel').disabled=false;$('analyze').disabled=true;state.worker.onmessage=event=>{if(id!==state.job)return;const data=event.data;terminate();if(data.ok)done(data.result);else notice(data.error,'error');};state.worker.onerror=event=>{event.preventDefault();terminate();notice('解析 Worker の実行に失敗しました。ブラウザのローカル Worker 対応を確認してください。','error');};state.worker.postMessage({kind,payload});
+}catch(error){terminate();notice('Web Worker を開始できません: '+error.message,'error');}}
+function markDirty(){state.dirty=true;$('settings-state').textContent='設定変更あり · 表示は前回の結果です。解析を再実行してください';if(state.worker){terminate();notice('設定を変更したため計算を中止しました。解析を再実行してください。','warn');}disableExports(true);}
+function disableExports(disabled){for(const id of ['export-spectrum','export-peaks','export-history'])$(id).disabled=disabled;document.querySelectorAll('[data-png]').forEach(b=>b.disabled=disabled);}
+function clearAnalysis(){state.result=null;state.options=null;$('analysis-info').textContent='時間は秒に換算して解析します。';legend('history-legend',['入力']);disableExports(true);plots.spectrum.clear();plots.spectrogram.clear();$('peaks').replaceChildren();$('spectrum-info').textContent='未解析';$('stft-info').textContent='未解析';$('spectrum-legend').replaceChildren();}
+function loadText(text,name){state.readJob++;terminate();state.text=text;state.filename=name;state.table=null;state.raw=null;clearAnalysis();plots.history.clear();$('summary').replaceChildren();$('analyze').disabled=true;notice('入力ファイルを検査しています…');task('parse',{text,delimiter:$('delimiter').value,header:$('header').value},table=>{if(table.rows.length>524288){notice('最大データ点数は 524,288 点です。','error');return;}state.table=table;for(const id of ['time-col','value-col']){$(id).replaceChildren(...table.headers.map((h,i)=>new Option(`${i+1}: ${h}`,i)));}$('value-col').value=String(Math.min(1,table.headers.length-1));$('file-name').textContent=`${name} · ${table.rows.length.toLocaleString()} rows / ${table.headers.length} columns`;$('preview').style.display='block';$('preview').textContent=[table.headers.join(' | '),...table.rows.slice(0,3).map(row=>row.join(' | '))].join('\n');$('analyze').disabled=false;markDirty();previewRaw();});}
+function selected(){if(!state.table)throw Error('データを読み込んでください。');const a=Number($('time-col').value),b=Number($('value-col').value);if(a===b)throw Error('時間列と値列には異なる列を選択してください。');const scale=Number($('time-unit').value),n=state.table.rows.length,t=new Float64Array(n),x=new Float64Array(n);for(let i=0;i<n;i++){const row=state.table.rows[i];for(const col of [a,b])if(row[col].trim()===''||!Number.isFinite(Number(row[col])))throw Error(`データ行 ${i+1}、列 ${col+1}: 有限の数値が必要です。欠損行は自動削除しません。`);t[i]=Number(row[a])*scale;x[i]=Number(row[b]);}return {t,x};}
+function labelUnit(unit){return unit?' ['+unit+']':'';}
+function previewRaw(){clearAnalysis();try{const raw=selected();state.raw=raw;const summary={...engine.inspect(raw.t),...engine.stats(raw.x)};renderSummary(summary);plots.history.set([{x:raw.t,y:raw.x,name:'入力',color:'#12619c'}],{xlabel:'Time [s]',ylabel:$('quantity').value+labelUnit($('unit').value)});const tol=finiteField('tolerance',0);notice(summary.jitter>tol?'非等間隔データです。FFT を実行するには、線形再サンプリングを選択してください。':'入力データを確認しました。設定を選び、解析を実行してください。',summary.jitter>tol?'warn':'');}catch(error){state.raw=null;plots.history.clear();$('summary').replaceChildren();notice(error.message,'error');}}
+function renderSummary(s){const fields=[['データ点数 N',s.n,''],['開始時刻',s.start,' s'],['終了時刻',s.end,' s'],['記録時間 (N−1)Δt',s.duration,' s'],['平均 Δt',s.dt,' s'],['最小 Δt',s.minDt,' s'],['最大 Δt',s.maxDt,' s'],['Δt 不均一度',s.jitter,''],['fs（平均Δtより）',s.fs,' Hz'],['Nyquist（等間隔時）',s.nyquist,' Hz'],['非padding Δf = fs/N',s.resolution,' Hz'],['最大値',s.max,''],['最小値',s.min,''],['平均値',s.mean,''],['標準偏差（母）',s.std,''],['RMS',s.rms,'']];$('summary').replaceChildren(...fields.map(([title,value,suffix])=>{const div=document.createElement('div');div.className='metric';const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=title;dd.textContent=fmt(value)+suffix;div.append(dt,dd);return div;}));}
+function analyze(){try{const raw=selected(),o=options();state.raw=raw;clearAnalysis();renderSummary({...engine.inspect(raw.t),...engine.stats(raw.x)});plots.history.set([{x:raw.t,y:raw.x,name:'入力',color:'#12619c'}],{xlabel:'Time [s]',ylabel:$('quantity').value+labelUnit($('unit').value)});const meta={unit:$('unit').value,quantity:$('quantity').value,filename:state.filename,timeColumn:Number($('time-col').value),valueColumn:Number($('value-col').value),timeScale:Number($('time-unit').value)};notice('FFT・Welch PSD・STFT を計算しています…');task('analyze',{...raw,options:o},result=>{state.result=result;state.options=o;state.meta=meta;state.dirty=false;$('settings-state').textContent='解析済み · 設定は結果と一致しています';renderResult();notice(`解析完了 · N = ${result.summary.n.toLocaleString()} · ${result.amplitude.nfft.toLocaleString()} point FFT`+(result.warnings.length?'\n'+result.warnings.join('\n'):''),result.warnings.length?'warn':'');});}catch(error){clearAnalysis();notice(error.message,'error');}}
+function resultUnit(){const u=state.meta?.unit||'a.u.',p=state.options?.integrate||0;return p?`(${u})·s${p===2?'²':''}`:u;}
+function legend(id,entries){$(id).replaceChildren(...entries.map((e,i)=>{const span=document.createElement('span');span.textContent=e;span.className=i?'second':'';return span;}));}
+function renderResult(){const r=state.result,o=state.options,m=state.meta,u=resultUnit();renderSummary(r.summary);$('analysis-info').textContent=`解析 Δt = ${fmt(r.processedSummary.dt)} s · fs/N = ${fmt(r.amplitude.resolution)} Hz · FFT bin = ${fmt(r.amplitude.binWidth)} Hz · coherent gain = ${fmt(r.amplitude.coherentGain)} · 記録端点間の逆数 = ${fmt(1/r.summary.duration)} Hz`;
+plots.history.set([{x:state.raw.t,y:state.raw.x,name:'入力',color:'#12619c'},{x:r.t,y:r.processed,name:'処理後',color:'#bc5623',right:o.integrate>0}],{xlabel:'Time [s]',ylabel:m.quantity+labelUnit(m.unit),rightLabel:o.integrate?'処理後'+labelUnit(u):''});legend('history-legend',['入力','処理後'+(o.integrate?'（右軸）':'')]);renderSpectrum();renderStft();$('amp-heading').textContent='Amplitude'+labelUnit(u);$('psd-heading').textContent=`Welch PSD [(${u})²/Hz] *`;
+$('peaks').replaceChildren(...r.peaks.map((p,i)=>{const tr=document.createElement('tr');for(const v of [i+1,p.frequency,p.period,p.amplitude,p.psd]){const td=document.createElement('td');td.textContent=fmt(v);tr.append(td);}return tr;}));if(!r.peaks.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='閾値を満たす局所ピークはありません。';tr.append(td);$('peaks').append(tr);}disableExports(false);$('spectrogram').closest('section').querySelector('[data-png]').disabled=!r.stft;}
+function frequencyRange(){const lo=finiteField('fmin',0),hi=finiteField('fmax',0);if(!(hi>lo))throw Error('周波数上限は下限より大きくしてください。');return [lo,hi];}
+function renderSpectrum(){if(!state.result)return;try{const r=state.result,isPSD=$('mode').value==='psd',s=isPSD?r.psd:r.amplitude,old=isPSD?r.originalPsd:r.originalAmplitude,u=resultUnit(),ylabel=isPSD?`PSD [(${u})²/Hz]`:`Amplitude [${u}]`,range=frequencyRange();let series=[{x:s.frequency,y:s.values,name:isPSD?'Welch PSD':'FFT amplitude',color:'#12619c'}];if(old)series.push({x:old.frequency,y:old.values,name:'フィルタ・積分前',color:'#bc5623',right:state.options.integrate>0});plots.spectrum.set(series,{xlabel:'Frequency [Hz]',ylabel,log:$('log-f').checked,range,rightLabel:state.options.integrate?(isPSD?`処理前 PSD [(${state.meta.unit})²/Hz]`:`処理前 [${state.meta.unit}]`):''});$('spectrum-info').textContent=isPSD?`Welch · L = ${r.psd.segmentLength} · ${r.psd.segments} segments · bin = ${fmt(r.psd.binWidth)} Hz · 窓 = ${state.options.window}`:`One-sided amplitude · M = ${r.amplitude.nfft} · bin = ${fmt(r.amplitude.binWidth)} Hz · 窓 = ${state.options.window}`;legend('spectrum-legend',old?['処理後','フィルタ・積分前'+(state.options.integrate?'（右軸）':'')]:['解析信号']);}catch(error){notice(error.message,'error');}}
+function renderStft(){if(!state.result)return;const s=state.result.stft;if(!s){plots.spectrogram.clear();$('stft-info').textContent=state.options.stft?'STFT はリソース制限により省略されました。警告を確認してください。':'STFT は無効です。';return;}try{plots.spectrogram.heat(s,{xlabel:'Time [s]',ylabel:'Frequency [Hz]',frequencyRange:frequencyRange()});$('stft-info').textContent=`L = ${s.segmentLength} · hop = ${s.step} samples · ${s.times.length} frames · bin = ${fmt(s.frequency[1]-s.frequency[0])} Hz · 色: PSD [dB re 1 (${resultUnit()})²/Hz]。表示範囲は最大から80 dB。`;}catch(error){notice(error.message,'error');}}
+// Canvas charts: pixel-column min/max envelopes preserve narrow extrema without
+// plotting hundreds of thousands of DOM nodes. Hover still reads full arrays.
+function lowerBound(a,v){let l=0,h=a.length;while(l<h){const m=(l+h)>>>1;if(a[m]<v)l=m+1;else h=m;}return l;}
+class Chart{
+constructor(id){this.id=id;this.host=$(id);this.canvas=document.createElement('canvas');this.canvas.tabIndex=0;this.canvas.setAttribute('role','img');this.canvas.setAttribute('aria-label',id+' plot. Use plus/minus to zoom, arrow keys to pan, Home to reset.');this.tip=document.createElement('div');this.tip.className='tooltip';this.host.append(this.canvas,this.tip);this.ctx=this.canvas.getContext('2d');this.series=[];this.view=null;this.drag=null;this.canvas.addEventListener('wheel',e=>{if(!this.view)return;e.preventDefault();const p=this.point(e);this.zoom(Math.exp(Math.sign(e.deltaY)*.2),p);},{passive:false});this.canvas.addEventListener('pointerdown',e=>{if(!this.view)return;this.canvas.setPointerCapture(e.pointerId);this.drag={point:this.point(e),view:this.view.slice()};});this.canvas.addEventListener('pointerup',()=>{this.drag=null;});this.canvas.addEventListener('pointercancel',()=>{this.drag=null;});this.canvas.addEventListener('pointermove',e=>{const p=this.point(e);if(this.drag){const d=this.drag;this.view=[d.view[0]-(p[0]-d.point[0])/this.pw*(d.view[1]-d.view[0]),d.view[1]-(p[0]-d.point[0])/this.pw*(d.view[1]-d.view[0]),d.view[2]+(p[1]-d.point[1])/this.ph*(d.view[3]-d.view[2]),d.view[3]+(p[1]-d.point[1])/this.ph*(d.view[3]-d.view[2])];this.draw();}this.hover(p);});this.canvas.addEventListener('pointerleave',()=>this.tip.style.display='none');this.canvas.addEventListener('dblclick',()=>this.reset());this.canvas.addEventListener('keydown',e=>{if(!this.view)return;if(e.key==='+'||e.key==='='){this.zoom(.8);e.preventDefault();}else if(e.key==='-'){this.zoom(1.25);e.preventDefault();}else if(e.key==='Home'){this.reset();e.preventDefault();}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){const axis=e.key==='ArrowLeft'||e.key==='ArrowRight'?0:2,sign=e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:1,d=(this.view[axis+1]-this.view[axis])*.1*sign;this.view[axis]+=d;this.view[axis+1]+=d;this.draw();e.preventDefault();}});new ResizeObserver(()=>this.draw()).observe(this.host);this.draw();}
+point(e){const r=this.canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];}
+transform(x){return this.config?.log?Math.log10(x):x;}
+inverse(x){return this.config?.log?10**x:x;}
+clear(){this.series=[];this.heatmap=null;this.view=null;this.tip.style.display='none';this.draw();}
+set(series,config={}){this.series=series;this.heatmap=null;this.config=config;let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity,rmin=Infinity,rmax=-Infinity;for(const s of series){for(let i=0;i<s.x.length;i++){if(config.log&&s.x[i]<=0)continue;const x=this.transform(s.x[i]);xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);if(!config.range||(s.x[i]>=config.range[0]&&s.x[i]<=config.range[1])){if(s.right){rmin=Math.min(rmin,s.y[i]);rmax=Math.max(rmax,s.y[i]);}else{ymin=Math.min(ymin,s.y[i]);ymax=Math.max(ymax,s.y[i]);}}}}if(config.range){xmin=this.transform(config.log?Math.max(config.range[0],this.inverse(xmin)):config.range[0]);xmax=this.transform(config.range[1]);if(xmax<=xmin){this.clear();throw Error('指定範囲に表示可能な正の周波数 bin がありません。周波数上限を広げてください。');}}if(!Number.isFinite(ymin)){ymin=0;ymax=1;}let dy=(ymax-ymin)||Math.abs(ymax)*.1||1;ymin-=.06*dy;ymax+=.06*dy;this.base=[xmin,xmax,ymin,ymax];if(Number.isFinite(rmin)){dy=(rmax-rmin)||Math.abs(rmax)*.1||1;this.rightBase=[rmin-.06*dy,rmax+.06*dy];}else this.rightBase=null;this.view=this.base.slice();this.draw();}
+heat(stft,config){this.series=[];this.config=config;this.heatmap=stft;let max=-300;for(const frame of stft.values)for(const v of frame)max=Math.max(max,10*Math.log10(Math.max(v,1e-30)));this.dbMax=max;this.dbMin=max-80;const dt=stft.times.length>1?(stft.times[1]-stft.times[0]):stft.segmentLength/(stft.frequency[1]*stft.segmentLength);this.base=[stft.times[0]-dt/2,stft.times[stft.times.length-1]+dt/2,...config.frequencyRange];this.view=this.base.slice();this.rightBase=null;this.draw();}
+reset(){if(this.base){this.view=this.base.slice();this.draw();}}
+zoom(factor,p){if(!this.view)return;p=p||[this.left+this.pw/2,this.top+this.ph/2];const v=this.view,x=v[0]+(p[0]-this.left)/this.pw*(v[1]-v[0]),y=v[3]-(p[1]-this.top)/this.ph*(v[3]-v[2]);this.view=[x+(v[0]-x)*factor,x+(v[1]-x)*factor,y+(v[2]-y)*factor,y+(v[3]-y)*factor];this.draw();}
+rightRange(){if(!this.rightBase)return null;const b=this.base,r=this.rightBase,v=this.view;return [r[0]+(v[2]-b[2])/(b[3]-b[2])*(r[1]-r[0]),r[0]+(v[3]-b[2])/(b[3]-b[2])*(r[1]-r[0])];}
+draw(){const c=this.ctx,w=this.host.clientWidth||600,h=this.host.clientHeight||300,dpr=window.devicePixelRatio||1;this.canvas.width=Math.round(w*dpr);this.canvas.height=Math.round(h*dpr);c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#fff';c.fillRect(0,0,w,h);this.left=78;this.top=20;this.pw=Math.max(30,w-this.left-(this.rightBase||this.heatmap?88:22));this.ph=h-76;c.font='12px system-ui';c.fillStyle='#65788b';if(!this.view){c.fillText('データを読み込むと、ここに表示されます。',20,h/2);return;}const v=this.view,mapX=x=>this.left+(x-v[0])/(v[1]-v[0])*this.pw,mapY=y=>this.top+this.ph-(y-v[2])/(v[3]-v[2])*this.ph;
+if(this.heatmap)this.drawHeat(c,w,h);
+c.strokeStyle='#e0e7ee';c.lineWidth=1;for(let i=0;i<=5;i++){const x=this.left+this.pw*i/5,y=this.top+this.ph*i/5;c.beginPath();c.moveTo(x,this.top);c.lineTo(x,this.top+this.ph);c.moveTo(this.left,y);c.lineTo(this.left+this.pw,y);c.stroke();c.fillStyle='#52657a';c.textAlign='center';c.fillText(this.axisFmt(this.inverse(v[0]+(v[1]-v[0])*i/5)),x,this.top+this.ph+20);c.textAlign='right';c.fillText(this.axisFmt(v[3]-(v[3]-v[2])*i/5),this.left-9,y+4);if(this.rightBase){const r=this.rightRange();c.textAlign='left';c.fillText(this.axisFmt(r[1]-(r[1]-r[0])*i/5),this.left+this.pw+8,y+4);}}
+c.save();c.beginPath();c.rect(this.left,this.top,this.pw,this.ph);c.clip();for(const s of this.series){c.strokeStyle=s.color;c.lineWidth=1.25;const range=s.right?this.rightRange():[v[2],v[3]],my=y=>this.top+this.ph-(y-range[0])/(range[1]-range[0])*this.ph;let start=Math.max(0,lowerBound(s.x,this.inverse(v[0]))-1),end=Math.min(s.x.length,lowerBound(s.x,this.inverse(v[1]))+1),bucket=-1,low=Infinity,high=-Infinity,last=0,first=0,active=false;c.beginPath();const flush=()=>{if(!active)return;const x=this.left+bucket+.5;if(!Number.isFinite(x))return;c.lineTo(x,my(first));c.lineTo(x,my(low));c.lineTo(x,my(high));c.lineTo(x,my(last));};for(let i=start;i<end;i++){if(this.config.log&&s.x[i]<=0)continue;const px=Math.floor(mapX(this.transform(s.x[i]))-this.left),val=s.y[i];if(px!==bucket){flush();bucket=px;low=val;high=val;first=val;last=val;if(!active){c.moveTo(this.left+bucket+.5,my(val));active=true;}}else{low=Math.min(low,val);high=Math.max(high,val);last=val;}}flush();c.stroke();}c.restore();c.fillStyle='#2d455c';c.textAlign='center';c.fillText(this.config.xlabel||'',this.left+this.pw/2,h-10);c.save();c.translate(15,this.top+this.ph/2);c.rotate(-Math.PI/2);c.fillText(this.config.ylabel||'',0,0);c.restore();if(this.rightBase){c.save();c.translate(w-10,this.top+this.ph/2);c.rotate(Math.PI/2);c.fillText(this.config.rightLabel||'',0,0);c.restore();}}
+axisFmt(x){return !Number.isFinite(x)?'—':Math.abs(x)>1e5||(Math.abs(x)>0&&Math.abs(x)<.001)?x.toExponential(1):Number(x.toPrecision(4)).toString();}
+color(z){z=Math.max(0,Math.min(1,z));const stops=[[18,35,74],[35,93,145],[32,159,163],[157,208,103],[255,220,71]],q=z*4,i=Math.min(3,Math.floor(q)),t=q-i;return stops[i].map((v,j)=>Math.round(v+(stops[i+1][j]-v)*t));}
+drawHeat(c){const s=this.heatmap,v=this.view,width=Math.max(1,Math.floor(this.pw)),height=Math.max(1,Math.floor(this.ph)),off=document.createElement('canvas');off.width=width;off.height=height;const oc=off.getContext('2d'),img=oc.createImageData(width,height),df=s.frequency[1]-s.frequency[0],hop=s.times.length>1?s.times[1]-s.times[0]:this.base[1]-this.base[0];for(let j=0;j<height;j++){const f=v[3]-(j+.5)/height*(v[3]-v[2]),k=Math.round(f/df);for(let i=0;i<width;i++){const time=v[0]+(i+.5)/width*(v[1]-v[0]),frame=Math.round((time-s.times[0])/hop),p=4*(j*width+i);let rgb=[245,248,251];if(frame>=0&&frame<s.times.length&&k>=0&&k<s.frequency.length){const db=10*Math.log10(Math.max(1e-30,s.values[frame][k]));rgb=this.color((db-this.dbMin)/(this.dbMax-this.dbMin));}img.data[p]=rgb[0];img.data[p+1]=rgb[1];img.data[p+2]=rgb[2];img.data[p+3]=255;}}oc.putImageData(img,0,0);c.drawImage(off,this.left,this.top,this.pw,this.ph);for(let i=0;i<this.ph;i++){const rgb=this.color(1-i/this.ph);c.fillStyle=`rgb(${rgb.join(',')})`;c.fillRect(this.left+this.pw+13,this.top+i,13,1);}c.fillStyle='#52657a';c.textAlign='left';c.fillText(this.dbMax.toFixed(0)+' dB',this.left+this.pw+32,this.top+8);c.fillText(this.dbMin.toFixed(0)+' dB',this.left+this.pw+32,this.top+this.ph);}
+hover(p){if(!this.view||p[0]<this.left||p[0]>this.left+this.pw||p[1]<this.top||p[1]>this.top+this.ph){this.tip.style.display='none';return;}const v=this.view,x=this.inverse(v[0]+(p[0]-this.left)/this.pw*(v[1]-v[0]));let lines=[];if(this.heatmap){const s=this.heatmap,nearest=(a,z)=>{const i=Math.min(a.length-1,lowerBound(a,z));return i&&Math.abs(a[i-1]-z)<Math.abs(a[i]-z)?i-1:i;},j=nearest(s.times,x),f=v[3]-(p[1]-this.top)/this.ph*(v[3]-v[2]),k=nearest(s.frequency,f);lines=[`t = ${fmt(s.times[j])} s`,`f = ${fmt(s.frequency[k])} Hz`,`PSD = ${fmt(s.values[j][k])}`,`${fmt(10*Math.log10(Math.max(1e-30,s.values[j][k])))} dB`];}else{for(const s of this.series){let i=Math.min(s.x.length-1,lowerBound(s.x,x));if(i&&Math.abs(s.x[i-1]-x)<Math.abs(s.x[i]-x))i--;lines.push(`${s.name}: (${fmt(s.x[i])}, ${fmt(s.y[i])})`);}}this.tip.textContent=lines.join('\n');this.tip.style.display='block';this.tip.style.left=Math.max(0,Math.min(p[0]+10,this.host.clientWidth-this.tip.offsetWidth-4))+'px';this.tip.style.top=Math.max(0,p[1]-this.tip.offsetHeight-8)+'px';}
+}
+const plots={history:new Chart('history'),spectrum:new Chart('spectrum'),spectrogram:new Chart('spectrogram')};
+// Exports contain the complete numerical arrays, never display-decimated data.
+function saveFile(name,content,type){const url=URL.createObjectURL(content instanceof Blob?content:new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+function csvCell(value){let s=String(value);if(typeof value==='string'&&/^[=+\-@]/.test(s))s="'"+s;return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function csv(rows){return rows.map(row=>row.map(csvCell).join(',')).join('\r\n');}
+function exportSpectrum(){if(!state.result||state.dirty)return;const isPSD=$('mode').value==='psd',s=isPSD?state.result.psd:state.result.amplitude,rows=[['frequency_Hz',(isPSD?'PSD_':'amplitude_')+resultUnit()+(isPSD?'_squared_per_Hz':'')]];for(let i=0;i<s.frequency.length;i++)rows.push([s.frequency[i],s.values[i]]);saveFile(isPSD?'welch-psd.csv':'fft-amplitude.csv',csv(rows),'text/csv;charset=utf-8');}
+$('export-spectrum').onclick=exportSpectrum;
+$('export-peaks').onclick=()=>{if(!state.result||state.dirty)return;saveFile('dominant-frequencies.csv',csv([['rank','frequency_Hz','period_s','amplitude_'+resultUnit(),'Welch_PSD_interpolated_'+resultUnit()+'_squared_per_Hz'],...state.result.peaks.map((p,i)=>[i+1,p.frequency,p.period,p.amplitude,p.psd])]),'text/csv;charset=utf-8');};
+$('export-history').onclick=()=>{if(!state.result||state.dirty)return;saveFile('processed-time-history.csv',csv([['time_s','processed_'+resultUnit()],...Array.from(state.result.t,(t,i)=>[t,state.result.processed[i]])]),'text/csv;charset=utf-8');};
+document.querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>plots[b.dataset.reset].reset());document.querySelectorAll('[data-png]').forEach(b=>b.onclick=()=>{if(state.dirty)return;plots[b.dataset.png].canvas.toBlob(blob=>{if(blob)saveFile(b.dataset.png+'.png',blob,'image/png');});});
+$('file').onchange=async()=>{const readId=++state.readJob;terminate();const file=$('file').files[0];if(!file)return;if(file.size>100*1024*1024){notice('100 MB を超えるファイルは読み込めません。','error');return;}try{const text=await file.text();if(readId===state.readJob)loadText(text,file.name);}catch(error){if(readId===state.readJob)notice(error.message,'error');}};
+$('load-paste').onclick=()=>loadText($('paste').value,'Pasted data');
+$('load-sample').onclick=()=>{const type=$('sample').value,rows=['time,value,reference'];for(let i=0;i<4000;i++){const t=i*.001,actual=type==='irregular'?t+(.0002*Math.sin(i*.37)):t,base=Math.sin(2*Math.PI*2*actual)+.5*Math.sin(2*Math.PI*10*actual)+.2*Math.sin(2*Math.PI*25*actual);let value=base;if(type==='dc')value+=3;if(type==='trend')value+=2+.8*t;if(type==='leakage')value=Math.sin(2*Math.PI*2.13*t);if(type==='chirp')value=Math.sin(2*Math.PI*(5*t+9.375*t*t));rows.push([actual,value,Math.sin(2*Math.PI*5*t)].join(','));}$('delimiter').value='auto';$('header').value='auto';$('time-unit').value='1';loadText(rows.join('\n'),'Sample: '+type);};
+$('analyze').onclick=analyze;$('cancel').onclick=()=>{terminate();markDirty();notice('計算を中止しました。','warn');};
+for(const id of ['delimiter','header'])$(id).onchange=()=>{if(state.text)loadText(state.text,state.filename);};
+for(const id of ['time-col','value-col','time-unit'])$(id).onchange=()=>{terminate();markDirty();previewRaw();};
+for(const id of ['mode','log-f','fmin','fmax'])$(id).onchange=()=>{if(state.result){renderSpectrum();renderStft();}};
+for(const el of document.querySelectorAll('aside input,aside select'))if(!el.onchange&&el.id!=='file')el.addEventListener('change',markDirty);
+
+</script></body></html>

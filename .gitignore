@@ -1,0 +1,11 @@
+# Local development intermediates; no build output is needed at runtime.
+dev/
+node_modules/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+screenshots/
+test-results/
+playwright-report/
