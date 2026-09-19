@@ -34,6 +34,10 @@ This tool is intended for engineering analysis and educational use.
 - 床の加速度時刻歴からのFRS（Sa・PSa・Sd・Sv・PSv）、複数減衰比、SI単位換算、周波数／周期表示、CSV／PNG保存。
 - 数値処理のWeb Worker実行。読み込んだデータをサーバへ送信しません。
 
+## 大規模データ用Julia版
+
+ブラウザの点数・計算量制限を超える場合は [Julia版](julia/README.md) を使用できます。FFT、Welch PSD、STFT、前処理・フィルタ・積分、FRSをCLI／ライブラリとして実行します。FRSの1億ステップ上限はなく、並列計算とチェックポイント再開、STFTの逐次ファイル出力に対応します。設定例は `julia/examples/` にあります。
+
 ## 入力形式・単位
 
 ```csv
