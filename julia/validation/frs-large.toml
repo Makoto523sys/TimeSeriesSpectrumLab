@@ -1,0 +1,14 @@
+cpu = "icelake-client"
+integration_steps = "158215814"
+julia = "1.10.10"
+max_refinement_relative_change = 1.833405737894367e-5
+os = "Linux"
+process_peak_rss_bytes = 0x198db000
+samples = 1000001
+scope = "FRS computation only; input generated in memory; compilation warm-up excluded; RSS includes Julia runtime, compilation and both runs; not a performance guarantee"
+serial_allocated_bytes = 8095872
+serial_seconds = 3.195807343
+serial_threaded_identical = true
+threaded_allocated_bytes = 8098576
+threaded_seconds = 1.043720933
+threads = 4

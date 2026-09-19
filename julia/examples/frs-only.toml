@@ -1,0 +1,44 @@
+# Use this for a large acceleration record. Replace input.path and column settings.
+[input]
+path = "../../examples/three-tones.csv"
+header = "auto"
+delimiter = "auto"
+time_column = 1
+value_column = 2
+time_scale = 1.0
+# For NS/EW/UD files WITHOUT a time column:
+# time_column = 0
+# value_column = 1
+# dt = 0.01           # seconds: 100 Hz
+# skip_lines = 0      # number of metadata lines preceding the header/data
+# header = "yes"     # set from actual file layout
+
+[preprocess]
+remove_mean = true
+integrate = 0
+
+[fft]
+enabled = false
+[welch]
+enabled = false
+[peaks]
+enabled = false
+[stft]
+enabled = false
+
+[frs]
+enabled = true
+unit = "m/s2"        # use "gal" for an actual Gal acceleration record
+minimum = 0.1
+maximum = 50.0
+count = 200
+damping_percent = [0.5, 2.0, 5.0]
+steps_per_period = 100
+residual_cycles = 5.0
+parallel = true
+
+[output]
+directory = "../results/frs-only"
+overwrite = false   # true: reuse matching FRS checkpoints; overwrite generated outputs
+history = false     # avoids writing a duplicate large time history
+report = true

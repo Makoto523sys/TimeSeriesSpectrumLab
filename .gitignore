@@ -9,3 +9,7 @@ Thumbs.db
 screenshots/
 test-results/
 playwright-report/
+
+# Julia analysis outputs and temporary checkpoints
+julia/results/
+julia/test/fixtures/

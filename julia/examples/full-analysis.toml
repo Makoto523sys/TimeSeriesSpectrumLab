@@ -1,0 +1,58 @@
+# Paths are relative to THIS configuration file. No limit on input sample count.
+[input]
+path = "../../examples/three-tones.csv"
+time_column = 1
+value_column = 2
+time_scale = 1.0
+quantity = "Acceleration"
+unit = "m/s2"
+
+[preprocess]
+remove_mean = true
+detrend = false
+resample = false
+filter = "none"
+integrate = 0
+
+[fft]
+enabled = true
+window = "hann"
+padding = "none"
+
+[welch]
+enabled = true
+segment_length = 1024
+overlap = 0.5
+window = "hann"
+
+[peaks]
+enabled = true
+threshold = 0.02
+distance = 0.5
+count = 8
+
+[stft]
+enabled = true
+segment_length = 512
+overlap = 0.75
+window = "hann"
+format = "binary" # or "csv"; binary avoids very large text output
+
+[frs]
+enabled = true
+minimum = 0.1
+maximum = 50.0
+count = 200
+spacing = "log"
+damping_percent = [0.5, 2.0, 5.0]
+unit = "m/s2" # actual conversion, independently of input.unit (a label)
+steps_per_period = 100
+residual_cycles = 5.0
+parallel = true
+# checkpoint_directory = "../results/example/frs-checkpoints"
+
+[output]
+directory = "../results/example"
+overwrite = false
+history = true
+report = true
