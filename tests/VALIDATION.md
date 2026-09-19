@@ -1,6 +1,6 @@
 # Numerical validation
 
-Executed 2026-09-09T13:24:17.466Z using v24.19.0, linux/x64.
+Executed 2026-09-19T02:14:03.816Z using v24.19.0, linux/x64.
 
 Source tested: `index.html#numerical-engine`.
 
@@ -27,9 +27,9 @@ Source tested: `index.html#numerical-engine`.
 | Centered FIR low/high/band filters reject stop bands with interior phase retained | PASS |  |
 | Trapezoidal integration: constant acceleration, zero initial conditions | PASS |  |
 | All shipped example files parse and analyze as intended | PASS |  |
-| Performance 10,000 samples: FFT + Welch + STFT | PASS | 36.0 ms; 18 STFT frames |
-| Performance 100,000 samples: FFT + Welch + STFT | PASS | 445.2 ms; 194 STFT frames |
-| Performance 300,000 samples: FFT + Welch + STFT | PASS | 1228.7 ms; 584 STFT frames |
+| Performance 10,000 samples: FFT + Welch + STFT | PASS | 37.4 ms; 18 STFT frames |
+| Performance 100,000 samples: FFT + Welch + STFT | PASS | 363.8 ms; 194 STFT frames |
+| Performance 300,000 samples: FFT + Welch + STFT | PASS | 1329.0 ms; 584 STFT frames |
 
 ## Performance
 
@@ -37,9 +37,9 @@ Wall-clock measurements are from this development container, not a browser guara
 
 | Samples | Elapsed (ms) | STFT frames |
 |---:|---:|---:|
-| 10000 | 36.0 | 18 |
-| 100000 | 445.2 | 194 |
-| 300000 | 1228.7 | 584 |
+| 10000 | 37.4 | 18 |
+| 100000 | 363.8 | 194 |
+| 300000 | 1329.0 | 584 |
 
 ## Reproduce
 
