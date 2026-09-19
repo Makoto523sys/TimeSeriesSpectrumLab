@@ -1,0 +1,12 @@
+fft_allocated_bytes = 36411496
+fft_seconds = 0.088818829
+julia = "1.12.7"
+note = "In-memory input; STFT callback accumulates energy without retaining the matrix; excludes output IO; warm-up excluded for FFT/Welch, STFT callback compilation included"
+samples = 1000001
+stft_allocated_bytes = 9544896
+stft_cells = 10048644
+stft_frames = 19588
+stft_seconds = 0.116462603
+welch_allocated_bytes = 187880
+welch_sample_visits = 20058112
+welch_seconds = 0.027083594

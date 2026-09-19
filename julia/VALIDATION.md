@@ -1,5 +1,7 @@
 # Julia implementation validation
 
+Latest rerun: [2026-09-20, Julia 1.12.7](validation/2026-09-20.md). The measurements below retain the original Julia 1.10.10 results.
+
 Executed 2026-09-19 with 64-bit Julia 1.10.10, FFTW.jl 1.10.0, Linux, 4 Julia threads. These are numerical/CLI tests, not seismic-design certification or a prediction of performance on other hardware.
 
 ## Correctness

@@ -1,0 +1,14 @@
+cpu = "arrowlake-s"
+integration_steps = "158215814"
+julia = "1.12.7"
+max_refinement_relative_change = 1.833405737894367e-5
+os = "Linux"
+process_peak_rss_bytes = 0x18d48000
+samples = 1000001
+scope = "FRS computation only; input generated in memory; compilation warm-up excluded; RSS includes Julia runtime, compilation and both runs; not a performance guarantee"
+serial_allocated_bytes = 8102728
+serial_seconds = 1.287822475
+serial_threaded_identical = true
+threaded_allocated_bytes = 8100160
+threaded_seconds = 0.405964617
+threads = 4
